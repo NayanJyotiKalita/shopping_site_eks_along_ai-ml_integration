@@ -166,20 +166,87 @@ yum install docker -y
 
 # Start the docker service
 sudo systemctl start docker
+```
 
+## Deploy the Retail Store Application
+
+```bash
+# Create ECR repositories for each service
+for SERVICE in ui catalog cart checkout orders; do
+  aws ecr create-repository --repository-name retail-store/$SERVICE
+done
+
+# Build and push Docker images
 ./build-and-push.sh
 ```
 
+<img width="1184" height="929" alt="Image" src="https://github.com/user-attachments/assets/3ab1c602-46bf-4935-b501-4a38786fb189" />
+
+```bash
+# Create namespace
+kubectl create namespace shopping-site
+
+# We do this step to replace all the env variables present inside the manifest files e.g.: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/shopping_site_eks_along_ai-ml_integration/cart:latest
+envsubst < k8s-manifests/ui-deployment.yaml | kubectl apply -f -
+envsubst < k8s-manifests/catalog-deployment.yaml | kubectl apply -f -
+envsubst < k8s-manifests/cart-deployment.yaml | kubectl apply -f -
+envsubst < k8s-manifests/checkout-deployment.yaml | kubectl apply -f -
+envsubst < k8s-manifests/orders-deployment.yaml | kubectl apply -f -
 
 
+# Check deployment status
+kubectl get pods -n retail-store
+kubectl get services -n retail-store
+```
 
+<img width="1479" height="724" alt="Image" src="https://github.com/user-attachments/assets/f8a5d31a-3abe-4e8e-9968-9af7864406f3" />
 
+## Access the Application
+```bash
+# Get the external URL for the UI service
+kubectl get service ui -n retail-store
 
+# The EXTERNAL-IP column will show the load balancer URL e.g.
+a83cba394f5224b40938752554a07edc-1529444520.us-east-1.elb.amazonaws.com  # I got this one
+# Open this URL in a web browser to access the application
+```
 
+<img width="1202" height="462" alt="Image" src="https://github.com/user-attachments/assets/727f175f-6900-446e-977b-16d192aaf620" />
 
+<img width="1309" height="930" alt="Image" src="https://github.com/user-attachments/assets/9d98d905-a758-4b56-a9eb-93a330d5585d" />
 
+<img width="1308" height="993" alt="Image" src="https://github.com/user-attachments/assets/3d24315d-f5f7-4ce1-9c94-cdff7e3c4784" />
 
+---
 
+# Querying the EKS Cluster using Bedrock
+
+So our application is running and now we want to get some info the cluster using Bedrock and we will use an Anthoric Claude-3 model to do it
+
+### Clone the git repo which contains all the executable files
+```bash
+git clone https://github.com/NayanJyotiKalita/eks_log_analyzer_using_bedrock.git
+```
+
+Now, because our entire log_analyzer script is in python, so we install python in our machine
+
+```bash
+sudo dnf install -y python3-pip
+or
+sudo apt install -y python3-pip
+
+cd eks_log_analyzer_using_bedrock/
+
+pip install -r requirements.txt
+
+# NOTE: pip should not be run you being the root user, so you need to be another user to run pip
+```
+
+And we have our Bedrock Log Analyzer Ready to query the EKS Cluster(s):
+
+<img width="968" height="989" alt="Image" src="https://github.com/user-attachments/assets/e1e744fc-1f40-4154-8bf6-4e158cd498d7" />
+
+Logging was disabled by default, after enabling we can now see the logs:
 
 
 
