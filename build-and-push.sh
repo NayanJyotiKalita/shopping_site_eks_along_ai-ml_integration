@@ -17,13 +17,13 @@ SERVICES=("ui" "catalog" "cart" "checkout" "orders")
 for SERVICE in "${SERVICES[@]}"; do
   echo "Building $SERVICE service..."
   cd src/$SERVICE
-  docker build -t retail-store/$SERVICE:latest .
+  docker build -t shopping_site_eks_along_ai-ml_integration/$SERVICE:latest .
   
   echo "Tagging $SERVICE image..."
-  docker tag retail-store/$SERVICE:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/retail-store/$SERVICE:latest
+  docker tag shopping_site_eks_along_ai-ml_integration/$SERVICE:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/shopping_site_eks_along_ai-ml_integration/$SERVICE:latest
   
   echo "Pushing $SERVICE image to ECR..."
-  docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/retail-store/$SERVICE:latest
+  docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/shopping_site_eks_along_ai-ml_integration/$SERVICE:latest
   
   cd ../..
   echo "$SERVICE service pushed to ECR successfully"
